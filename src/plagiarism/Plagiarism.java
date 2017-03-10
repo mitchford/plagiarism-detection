@@ -82,13 +82,16 @@ public class Plagiarism {
         Scanner scan = new Scanner(System.in);
         System.out.print("enter string: ");
         String user_string = scan.nextLine();
+        String test_string = "Test file. This will hopefully pick up matches. three sentences.";
         int matchCount = 0;
-        float percent = 0;
         int result = search.wordCount(user_string);
+        float percent = 0;
+    
+        //Separate the text file into sentences
         String[] submission = user_string.split("\\.");
         for (int i = 0; i < submission.length; i++) {
-            String testLine = submission[i];
-            boolean matched = search.KMP(user_string.toCharArray(), testLine.toCharArray());
+            // need to replace user_string variable with text from db
+            boolean matched = search.KMP(test_string.toCharArray(), submission[i].toCharArray());
             if (matched) {
                 // keep a count of matched strings
                 matchCount++;
