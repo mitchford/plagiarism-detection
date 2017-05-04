@@ -159,7 +159,7 @@ public class Plagiarism {
         // work out % of matched material for judgement
         percent = ((float) matchCount/(float) submission.length) * 100;
         percent2 = ((float) similarities/(float) submission.length) * 100;
-        System.out.println(percent + "% matched exactly. " + percent2 + "% similar (based on allowance). Word count: " + result);
+        //System.out.println(percent + "% matched exactly. " + percent2 + "% similar (based on allowance). Word count: " + result);
         
     }
     

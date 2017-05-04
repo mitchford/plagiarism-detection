@@ -15,8 +15,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.mongodb.MongoClient;
 
-import com.mongodb.DBCursor;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import java.util.ArrayList;
+import org.bson.Document;
 
 /**
  *
@@ -33,10 +36,17 @@ public class plagiarismUI extends javax.swing.JFrame {
     private BufferedReader originalBR;
     String userFile = null;
     String userText = null;
+    ArrayList<String> dbText = new ArrayList<String>();
     
     public plagiarismUI() {
         initComponents();
         openFile = new JFileChooser();
+        jButton3.setVisible(false);
+        jLabel2.setVisible(false);
+        jLabel3.setVisible(false);
+        jLabel4.setVisible(false);
+        jLabel5.setVisible(false);
+        jLabel6.setVisible(false);
     }
 
     /**
@@ -54,6 +64,12 @@ public class plagiarismUI extends javax.swing.JFrame {
         jCheckBox3 = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Plagiarism checker");
@@ -65,11 +81,16 @@ public class plagiarismUI extends javax.swing.JFrame {
             }
         });
 
-        jCheckBox1.setText("jCheckBox1");
+        jCheckBox1.setText("Word count");
 
-        jCheckBox2.setText("jCheckBox2");
+        jCheckBox2.setText("Similarity match");
+        jCheckBox2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox2ActionPerformed(evt);
+            }
+        });
 
-        jCheckBox3.setText("jCheckBox3");
+        jCheckBox3.setText("Exact match");
 
         jLabel1.setText("File submission form");
 
@@ -80,45 +101,91 @@ public class plagiarismUI extends javax.swing.JFrame {
             }
         });
 
+        jLabel2.setText("file path");
+
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("result1");
+
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel4.setText("result2");
+
+        jLabel5.setText("result3");
+
+        jButton3.setText("Exit");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("jLabel6");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(14, 14, 14)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jCheckBox3)
-                            .addComponent(jCheckBox2)
-                            .addComponent(jCheckBox1))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(6, 6, 6)
+                                        .addComponent(jLabel2))
+                                    .addComponent(jButton1))
+                                .addGap(115, 115, 115)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jButton2)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(6, 6, 6)
+                                        .addComponent(jButton3))))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel6)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jCheckBox1)
+                                        .addComponent(jCheckBox2)
+                                        .addComponent(jCheckBox3))
+                                    .addGap(122, 122, 122)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel5)
+                                        .addComponent(jLabel4)
+                                        .addComponent(jLabel3))))))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 111, Short.MAX_VALUE)
-                        .addComponent(jButton2)
-                        .addGap(60, 60, 60))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(123, 123, 123))
+                        .addGap(227, 227, 227)
+                        .addComponent(jLabel1)))
+                .addContainerGap(228, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(27, 27, 27)
+                .addGap(24, 24, 24)
                 .addComponent(jLabel1)
-                .addGap(44, 44, 44)
-                .addComponent(jCheckBox1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel6)
+                .addGap(19, 19, 19)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jCheckBox1)
+                    .addComponent(jLabel3))
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox2)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jCheckBox2)
+                    .addComponent(jLabel4))
                 .addGap(18, 18, 18)
-                .addComponent(jCheckBox3)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jCheckBox3)
+                    .addComponent(jLabel5))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jButton3))
+                .addContainerGap(128, Short.MAX_VALUE))
         );
 
         pack();
@@ -133,6 +200,8 @@ public class plagiarismUI extends javax.swing.JFrame {
         userFile = f.getAbsolutePath();
         try(BufferedReader br = new BufferedReader(new FileReader(userFile))){
             userText = br.readLine();
+            jLabel2.setText("File attached: " + f);
+            jLabel2.setVisible(true);
         }catch(IOException e){
             System.out.println(e);
         }
@@ -145,44 +214,114 @@ public class plagiarismUI extends javax.swing.JFrame {
         // TODO add your handling code here:
         //submit button
         int matchCount = 0, similarities = 0;
-        int result = search.wordCount(userText);
-        float percent, percent2;
-        int dist;
-        int allowance = 10;
+        int result = 0;
+        float kmpPercent, levPercent;
+        int dist = 0;
+        int allowance = 40;
+        int highestSim = 0, highestExa = 0;
         
+        dbConnect(userText);
+
+        //Separate the text file into sentences
+        String[] submission = userText.split("\\.");
+        for (int i = 0; i < submission.length; i++) {
+            if (jCheckBox1.isSelected()) {
+                result = search.wordCount(userText);
+            }
+            
+            if (jCheckBox2.isSelected()) {
+                for (int y = 0; y < dbText.size(); y++) {
+                    dist = search.levd(submission[i].trim().toLowerCase().toCharArray(), dbText.get(y).trim().toLowerCase().toCharArray());
+                    if (dist < allowance) {
+                        similarities++;
+                    }
+                    if (similarities > highestSim) {
+                        highestSim = similarities;
+                    }
+                }
+            }
+            
+            if (jCheckBox3.isSelected()) {
+                for (int j = 0; j < dbText.size(); j++) {
+                    boolean matched = search.KMP(dbText.get(j).trim().toLowerCase().toCharArray(), submission[i].trim().toLowerCase().toCharArray());
+                    if (matched) {
+                        // keep a count of matched strings
+                        matchCount++;
+                    }
+                    if (highestExa < matchCount) {
+                        highestExa = matchCount;
+                    }
+                }
+            }
+            
+        }
+        // work out % of matched material for judgement
+        kmpPercent = ((float) highestExa/(float) submission.length) * 100;
+        levPercent = ((float) highestSim/(float) submission.length) * 100;
+        jLabel1.setText("Results:");
+        jLabel6.setText("The results are the highest matched percentages and may come from different files");
+        jLabel5.setText("Exact match percentange = " + kmpPercent + "%");
+        jLabel4.setText("Similarity match percentage = " + levPercent + "%");
+        jLabel3.setText("Word count = " + result);
+        
+        resultSet();
+        
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jCheckBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jCheckBox2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+        System.exit(0);
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    public void resultSet(){
+        jLabel3.setVisible(true);
+        jLabel4.setVisible(true);
+        jLabel5.setVisible(true);
+        jLabel6.setVisible(true);
+        jButton1.setVisible(false);
+        jButton2.setVisible(false);
+        jButton3.setVisible(true);
+        jLabel2.setVisible(false);
+        jCheckBox1.setVisible(false);
+        jCheckBox2.setVisible(false);
+        jCheckBox3.setVisible(false);
+    }
+    
+    
+    public void dbConnect(String userS){
         try{
 		
             // To connect to mongodb server
             MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
             MongoDatabase db = mongoClient.getDatabase( "project" );
-			
+            MongoCollection coll = db.getCollection("submissions");
+            BasicDBObject query = new BasicDBObject();
+            query.put("text", true);
+            MongoCursor<Document> cursor = coll.find().projection(new BasicDBObject("text", true).append("_id", false)).iterator();
+            while(cursor.hasNext()){
+                Document line = (Document) cursor.next();
+                String text = line.toString();
+                text = text.substring(15, text.length()-2);
+                dbText.add(text);
+
+                Document doc = new Document();
+                doc.put("title", "New Sub");
+                doc.put("text", userText);
+                doc.put("student", 14021226);
+				
+            coll.insertOne(doc);
+                
+            }
+           
         }catch(Exception e){
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
         }
-        
-        
-        
+    }
     
-        //Separate the text file into sentences
-        String[] submission = userText.split("\\.");
-        for (int i = 0; i < submission.length; i++) {
-            dist = search.levd(submission[i].trim().toLowerCase().toCharArray(), levtest.trim().toLowerCase().toCharArray());
-            if (dist < allowance) {
-                similarities++;
-            }
-            // need to replace user_string variable with text from db
-            boolean matched = search.KMP(test_string.trim().toLowerCase().toCharArray(), submission[i].trim().toLowerCase().toCharArray());
-            if (matched) {
-                // keep a count of matched strings
-                matchCount++;
-            }
-        }
-        // work out % of matched material for judgement
-        percent = ((float) matchCount/(float) submission.length) * 100;
-        percent2 = ((float) similarities/(float) submission.length) * 100;
-
-    }//GEN-LAST:event_jButton2ActionPerformed
-
     /**
      * @param args the command line arguments
      */
@@ -221,9 +360,15 @@ public class plagiarismUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JCheckBox jCheckBox3;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     // End of variables declaration//GEN-END:variables
 }
