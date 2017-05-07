@@ -217,48 +217,61 @@ public class plagiarismUI extends javax.swing.JFrame {
         int result = 0;
         float kmpPercent, levPercent;
         int dist = 0;
-        int allowance = 40;
-        int highestSim = 0, highestExa = 0;
+        int allowance = 30, highestExa = 0, highestSim = 0;        
         
         dbConnect(userText);
 
         //Separate the text file into sentences
         String[] submission = userText.split("\\.");
-        for (int i = 0; i < submission.length; i++) {
-            if (jCheckBox1.isSelected()) {
-                result = search.wordCount(userText);
-            }
+        String[] lines = null;
+        for (int j = 0; j < dbText.size(); j++) {
+            //highestSim = 0;
+            //highestExa = 0;
+            matchCount = 0;
             
-            if (jCheckBox2.isSelected()) {
-                for (int y = 0; y < dbText.size(); y++) {
-                    dist = search.levd(submission[i].trim().toLowerCase().toCharArray(), dbText.get(y).trim().toLowerCase().toCharArray());
-                    if (dist < allowance) {
-                        similarities++;
+            lines = null;
+            
+            for (int i = 0; i < submission.length; i++) {
+                similarities = 0;
+
+                if (jCheckBox1.isSelected()) {
+                    result = search.wordCount(userText);
+                }
+
+                if (jCheckBox2.isSelected()) {
+                    lines = dbText.get(j).split("\\.");
+                    for (int k = 0; k < lines.length; k++) {
+                        //similarities = 0;
+                        dist = search.levd(submission[i].trim().toLowerCase().toCharArray(), lines[k].trim().toLowerCase().toCharArray());
+                        if (dist < allowance) {
+                            similarities++;
+                        }
                     }
+                    
                     if (similarities > highestSim) {
                         highestSim = similarities;
                     }
+                    
                 }
-            }
-            
-            if (jCheckBox3.isSelected()) {
-                for (int j = 0; j < dbText.size(); j++) {
+
+                if (jCheckBox3.isSelected()) {
+
                     boolean matched = search.KMP(dbText.get(j).trim().toLowerCase().toCharArray(), submission[i].trim().toLowerCase().toCharArray());
                     if (matched) {
-                        // keep a count of matched strings
                         matchCount++;
                     }
-                    if (highestExa < matchCount) {
-                        highestExa = matchCount;
+                    if (matchCount > highestExa) {
+                       highestExa = matchCount;
                     }
                 }
+
             }
             
         }
         // work out % of matched material for judgement
         kmpPercent = ((float) highestExa/(float) submission.length) * 100;
         levPercent = ((float) highestSim/(float) submission.length) * 100;
-        jLabel1.setText("Results:");
+        jLabel1.setText("Results:" + highestSim);
         jLabel6.setText("The results are the highest matched percentages and may come from different files");
         jLabel5.setText("Exact match percentange = " + kmpPercent + "%");
         jLabel4.setText("Similarity match percentage = " + levPercent + "%");
@@ -313,7 +326,7 @@ public class plagiarismUI extends javax.swing.JFrame {
                 doc.put("text", userText);
                 doc.put("student", 14021226);
 				
-            coll.insertOne(doc);
+            //coll.insertOne(doc);
                 
             }
            
