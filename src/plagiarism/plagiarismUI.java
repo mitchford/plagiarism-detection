@@ -217,7 +217,8 @@ public class plagiarismUI extends javax.swing.JFrame {
         int result = 0;
         float kmpPercent, levPercent;
         int dist = 0;
-        int allowance = 30, highestExa = 0, highestSim = 0;        
+        int allowance = 30, highestExa = 0, highestSim = 0;
+        boolean matchedCount = false;
         
         dbConnect(userText);
 
@@ -228,30 +229,31 @@ public class plagiarismUI extends javax.swing.JFrame {
             //highestSim = 0;
             //highestExa = 0;
             matchCount = 0;
-            
+            int dbWordCount = search.wordCount(dbText.get(j));
             lines = null;
-            
+ 
             for (int i = 0; i < submission.length; i++) {
                 similarities = 0;
 
                 if (jCheckBox1.isSelected()) {
                     result = search.wordCount(userText);
+                    if (dbWordCount == result) {
+                        matchedCount = true;
+                    }
                 }
 
                 if (jCheckBox2.isSelected()) {
                     lines = dbText.get(j).split("\\.");
                     for (int k = 0; k < lines.length; k++) {
-                        //similarities = 0;
                         dist = search.levd(submission[i].trim().toLowerCase().toCharArray(), lines[k].trim().toLowerCase().toCharArray());
                         if (dist < allowance) {
                             similarities++;
                         }
                     }
-                    
                     if (similarities > highestSim) {
                         highestSim = similarities;
                     }
-                    
+   
                 }
 
                 if (jCheckBox3.isSelected()) {
@@ -271,12 +273,15 @@ public class plagiarismUI extends javax.swing.JFrame {
         // work out % of matched material for judgement
         kmpPercent = ((float) highestExa/(float) submission.length) * 100;
         levPercent = ((float) highestSim/(float) submission.length) * 100;
-        jLabel1.setText("Results:" + highestSim);
+        jLabel1.setText("Results:");
         jLabel6.setText("The results are the highest matched percentages and may come from different files");
         jLabel5.setText("Exact match percentange = " + kmpPercent + "%");
         jLabel4.setText("Similarity match percentage = " + levPercent + "%");
-        jLabel3.setText("Word count = " + result);
-        
+        if (matchedCount) {
+            jLabel3.setText("Word count = " + result + ". This matches the word count of other files.");
+        } else {
+            jLabel3.setText("Word count = " + result + ". This does not match the word count of other files.");
+        }
         resultSet();
         
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -311,7 +316,7 @@ public class plagiarismUI extends javax.swing.JFrame {
             // To connect to mongodb server
             MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
             MongoDatabase db = mongoClient.getDatabase( "project" );
-            MongoCollection coll = db.getCollection("submissions");
+            MongoCollection coll = db.getCollection("submits");
             BasicDBObject query = new BasicDBObject();
             query.put("text", true);
             MongoCursor<Document> cursor = coll.find().projection(new BasicDBObject("text", true).append("_id", false)).iterator();
@@ -320,15 +325,15 @@ public class plagiarismUI extends javax.swing.JFrame {
                 String text = line.toString();
                 text = text.substring(15, text.length()-2);
                 dbText.add(text);
-
-                Document doc = new Document();
-                doc.put("title", "New Sub");
-                doc.put("text", userText);
-                doc.put("student", 14021226);
-				
-            //coll.insertOne(doc);
                 
             }
+            
+            Document doc = new Document();
+            doc.put("title", "New Sub");
+            doc.put("text", userText);
+            doc.put("student", 14021226);                    
+				
+            coll.insertOne(doc);
            
         }catch(Exception e){
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
